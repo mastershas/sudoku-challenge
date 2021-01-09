@@ -8,7 +8,8 @@
     <title>Soduku Board</title>
     
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-    <script src="sudoku.js"></script>
+    <script src="scripts/commonLib.js"></script>
+    <script src="scripts/sudoku.js"></script>
     <style type="text/css">
     
       html, body {
@@ -39,6 +40,20 @@
 
       input:disabled {
         background-color: #EEEEEE;
+      }
+
+      input[type="file"] {
+        display: block;
+        width: 100%;
+        font-size: 20px;
+        background: none;
+        padding: 10px;
+        padding-left:0;
+      }
+
+      .load-puzzle-container{
+        margin-top: 20px;
+        border-top: 1px solid #ddd;
       }
 
       #grid{
@@ -248,9 +263,16 @@
                     <option value="samurai">Samurai</option>
                   </select>
             </div>
-            <div class="btn-group btn-group-lg" role="group" aria-label="...">
-                <button type="button" onClick="createSudoku()" class="btn btn-info">Create New</button>
+            <div class="btn-group" role="group" aria-label="...">
+                <button type="button" onClick="createSudoku()" id="create-new" class="btn btn-danger">Create New</button>
+                <button type="button" onClick="solveSudoku(board)" id="solve" class="btn btn-success">Solve</button>
+            </div>
+            <div class="load-puzzle-container">
+              <h4>Load Soduku From File</h4>
+              <input type="file" id="fileInput">
+              <div class="btn-group" role="group" aria-label="...">
                 <button type="button" onClick="solveSudoku(board)" class="btn btn-success">Solve</button>
+            </div>
             </div>
         </div>
       </div>  
@@ -259,37 +281,59 @@
   <Script> 
     let board = []
     defaultLoadSudoku('easy')
-    
-        function defaultLoadSudoku(){
+    document.getElementById('fileInput').addEventListener('change', function selectedFileChanged() {
+      let reader = new FileReader();
+      reader.readAsText(this.files[0]);
+      reader.onload = function() {
+      let res = reader.result.trim().replace(/(\r\n|\n|\r)/gm,'').replace(/(\.)/gm,0).split("$");
+      res.forEach((item,index) =>{
+          for(i=0; i<item.length; i++){
+            board[index][i]=parseInt(item[i])
+          }
+        })
+      printUnSolvedBoard(board)
+      }
+    })
+
+    function defaultLoadSudoku(){
         const level = document.getElementById("level").value
         board = createNewGame(level)
-        printBoard(board)
+        printUnSolvedBoard(board)
     }
     function createSudoku(){
         const level = document.getElementById("level").value
         let promise = new Promise(function(resolve, reject) {
                         resolve(createNewGame(level)) 
                         }).then(board =>{
-                            printBoard(board)
+                          printUnSolvedBoard(board)
                       })
     }
     function solveSudoku(board){
         let promise = new Promise(function(resolve, reject) {
                         resolve(solve(board)) 
                         }).then(board =>{
-                            printBoard(board[1])
+                          printSolvedBoard(board[1])
                       })
         
     }
-    function printBoard(board){
+    function printUnSolvedBoard(board){
         board.forEach((item, rowIndex) => {
             item.forEach((item, colIndex) =>{
-                document.getElementById("cell-"+rowIndex.toString()+colIndex.toString()).value=(board[rowIndex][colIndex] ==0) ? '' : (board[rowIndex][colIndex])
+                const element = document.getElementById("cell-"+rowIndex.toString()+colIndex.toString())
+                element.value=(board[rowIndex][colIndex] ==0) ? '' : (board[rowIndex][colIndex])
                 if(board[rowIndex][colIndex] !==0){
-                    document.getElementById("cell-"+rowIndex.toString()+colIndex.toString()).setAttribute("disabled", "")
+                    element.setAttribute("disabled", "disabled")
                 }else{
-                    document.getElementById("cell-"+rowIndex.toString()+colIndex.toString()).removeAttribute("disabled")
+                    element.removeAttribute("disabled")
                 }
+            })
+        })
+    }
+    function printSolvedBoard(board){
+        board.forEach((item, rowIndex) => {
+            item.forEach((item, colIndex) =>{
+                const element = document.getElementById("cell-"+rowIndex.toString()+colIndex.toString())
+                element.value=(board[rowIndex][colIndex] ==0) ? '' : (board[rowIndex][colIndex])
             })
         })
     }
