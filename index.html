@@ -291,7 +291,7 @@
             board[index][i]=parseInt(item[i])
           }
         })
-      printUnSolvedBoard(board)
+        printUnSolvedBoard(board)
       }
     })
 
@@ -304,9 +304,11 @@
         const level = document.getElementById("level").value
         let promise = new Promise(function(resolve, reject) {
                         resolve(createNewGame(level)) 
-                        }).then(board =>{
-                          printUnSolvedBoard(board)
+                        }).then(newBoard =>{
+                          printUnSolvedBoard(newBoard)  
+                          board = newBoard
                       })
+        
     }
     function solveSudoku(board){
         let promise = new Promise(function(resolve, reject) {
